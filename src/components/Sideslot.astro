@@ -1,0 +1,283 @@
+---
+// src/components/Sideslot.astro
+const { type = "newest", length = 5 } = Astro.props || {};
+
+const allPosts = Object.values(
+    import.meta.glob("../pages/post/*.md", { eager: true }),
+);
+// 根据类型筛选文章
+let filteredPosts = [];
+
+// 获取当前日期和三个月前的日期
+const currentDate = new Date();
+const threeMonthsAgo = new Date();
+threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+
+switch (type) {
+    case "origin":
+        // 筛选origin=true的文章
+        filteredPosts = allPosts
+            .filter((post) => post.frontmatter.origin === true)
+            .sort(
+                (a, b) =>
+                    new Date(b.frontmatter.date) - new Date(a.frontmatter.date),
+            )
+            .slice(0, length);
+        break;
+
+    case "newest":
+        // 筛选最新的文章
+        filteredPosts = allPosts
+            .sort(
+                (a, b) =>
+                    new Date(b.frontmatter.date) - new Date(a.frontmatter.date),
+            )
+            .slice(0, length);
+        break;
+
+    case "random":
+        // 筛选最近三个月的文章并随机选择
+        const recentPosts = allPosts.filter((post) => {
+            const postDate = new Date(post.frontmatter.date);
+            return postDate >= threeMonthsAgo && postDate <= currentDate;
+        });
+
+        // 随机排序
+        filteredPosts = recentPosts
+            .sort(() => Math.random() - 0.5)
+            .slice(0, length);
+        break;
+
+    default:
+        filteredPosts = allPosts
+            .sort(
+                (a, b) =>
+                    new Date(b.frontmatter.date) - new Date(a.frontmatter.date),
+            )
+            .slice(0, length);
+}
+
+// 获取样式配置（不包含JSX）
+const getStyleConfig = () => {
+    switch (type) {
+        case "origin":
+            return {
+                title: "原创精选",
+                bgColor: "bg-orange-50",
+                borderColor: "border-orange-200",
+                textColor: "text-orange-700",
+                iconColor: "text-orange-500",
+            };
+
+        case "newest":
+            return {
+                title: "最新文章",
+                bgColor: "bg-blue-50",
+                borderColor: "border-blue-200",
+                textColor: "text-blue-700",
+                iconColor: "text-blue-500",
+            };
+
+        case "random":
+            return {
+                title: "随机推荐",
+                bgColor: "bg-purple-50",
+                borderColor: "border-purple-200",
+                textColor: "text-purple-700",
+                iconColor: "text-purple-500",
+            };
+
+        default:
+            return {
+                title: "文章推荐",
+                bgColor: "bg-gray-50",
+                borderColor: "border-gray-200",
+                textColor: "text-gray-700",
+                iconColor: "text-gray-500",
+            };
+    }
+};
+
+const styleConfig = getStyleConfig();
+---
+
+<div
+    class={`sideslot-container bg-white rounded-lg shadow-sm border ${styleConfig.borderColor} overflow-hidden`}
+>
+    <!-- 标题区域 -->
+    <div
+        class={`${styleConfig.bgColor} px-4 py-3 border-b ${styleConfig.borderColor}`}
+    >
+        <h3 class={`font-semibold ${styleConfig.textColor} flex items-center`}>
+            <!-- 图标 -->
+            {
+                type === "origin" && (
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class={`h-5 w-5 mr-2 ${styleConfig.iconColor}`}
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                        />
+                    </svg>
+                )
+            }
+
+            {
+                type === "newest" && (
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class={`h-5 w-5 mr-2 ${styleConfig.iconColor}`}
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                        />
+                    </svg>
+                )
+            }
+
+            {
+                type === "random" && (
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class={`h-5 w-5 mr-2 ${styleConfig.iconColor}`}
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                        />
+                    </svg>
+                )
+            }
+
+            {
+                type !== "origin" && type !== "newest" && type !== "random" && (
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class={`h-5 w-5 mr-2 ${styleConfig.iconColor}`}
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                        />
+                    </svg>
+                )
+            }
+
+            {styleConfig.title}
+        </h3>
+    </div>
+
+    <!-- 文章列表 -->
+    <div class="divide-y divide-gray-100">
+        {
+            filteredPosts.length > 0 ? (
+                filteredPosts.map((post, index) => (
+                    <a
+                        href={post.url}
+                        class="block px-4 py-3 hover:bg-gray-50 transition-colors duration-200 group"
+                    >
+                        <div class="flex items-start">
+                            <div
+                                class={`flex-shrink-0 w-6 h-6 rounded-full ${styleConfig.bgColor} flex items-center justify-center text-xs font-medium ${styleConfig.textColor} mr-3 mt-0.5`}
+                            >
+                                {index + 1}
+                            </div>
+
+                            <span class="text-sm text-gray-800 group-hover:text-indigo-600 transition-colors line-clamp-2">
+                                {post.frontmatter.title}
+                            </span>
+                        </div>
+                    </a>
+                ))
+            ) : (
+                <div class="px-4 py-6 text-center text-gray-500">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-10 w-10 mx-auto text-gray-300 mb-2"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                    </svg>
+                    <p>暂无相关文章</p>
+                </div>
+            )
+        }
+    </div>
+
+    <!-- 底部链接（根据类型不同显示不同链接） -->
+    {
+        filteredPosts.length > 0 && (
+            <div class="border-t border-gray-100 px-4 py-2 bg-gray-50">
+                <a
+                    href={
+                        type === "origin"
+                            ? "/origin"
+                            : type === "random"
+                              ? "/random"
+                              : "/newest"
+                    }
+                    class="text-xs text-gray-500 hover:text-indigo-600 transition-colors flex items-center justify-end"
+                >
+                    查看更多
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-3 w-3 ml-1"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M9 5l7 7-7 7"
+                        />
+                    </svg>
+                </a>
+            </div>
+        )
+    }
+</div>
+
+<style>
+    .sideslot-container {
+        font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+    }
+
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+</style>

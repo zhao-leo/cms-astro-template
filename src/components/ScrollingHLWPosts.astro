@@ -1,0 +1,105 @@
+---
+// src/components/ScrollingHLWPosts.astro
+// 从Markdown文件获取数据
+const allPosts = Object.values(
+    import.meta.glob("../pages/post/*.md", { eager: true }),
+);
+// 筛选出包含"hlw"分类的文章
+const hlwPosts = allPosts
+    .filter((post) => {
+        const categories = post.frontmatter.categories || [];
+        return categories.includes("hlw");
+    })
+    // 按日期排序（最新的在前）
+    .sort((a, b) => new Date(b.frontmatter.date) - new Date(a.frontmatter.date))
+    // 取最新的10篇
+    .slice(0, 10);
+---
+
+<div class="scrolling-banner">
+    <div class="scrolling-content" id="scrolling-content">
+        {
+            hlwPosts.length > 0 ? (
+                hlwPosts.map((post) => (
+                    <a href={post.url} class="post-link">
+                        {post.frontmatter.title}
+                    </a>
+                ))
+            ) : (
+                <span class="post-link">📄 暂无最新科技文章</span>
+            )
+        }
+    </div>
+</div>
+
+<style>
+    .scrolling-banner {
+        width: 100%;
+        height: 40px;
+        background: white;
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .scrolling-content {
+        display: flex;
+        align-items: center;
+        height: 100%;
+        white-space: nowrap;
+        animation: scroll-infinite 60s linear infinite;
+    }
+
+    .post-link {
+        color: #374151;
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 14px;
+        margin-right: 80px;
+        transition: color 10s ease;
+        flex-shrink: 0;
+    }
+
+    .post-link:hover {
+        color: #3b82f6;
+    }
+
+    @keyframes scroll-infinite {
+        0% {
+            transform: translateX(0);
+        }
+        100% {
+            transform: translateX(-50%);
+        }
+    }
+
+    .scrolling-banner:hover .scrolling-content {
+        animation-play-state: paused;
+    }
+</style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const container = document.getElementById("scrolling-content");
+        if (!container) return;
+
+        // 获取原始内容
+        const originalContent = container.innerHTML;
+
+        // 复制内容多次以确保无缝循环
+        // 复制足够多的次数以填满屏幕并确保无缝滚动
+        const repeatCount = 10; // 可以根据需要调整
+        let repeatedContent = "";
+
+        for (let i = 0; i < repeatCount; i++) {
+            repeatedContent += originalContent;
+        }
+
+        container.innerHTML = repeatedContent;
+
+        // 确保动画从内容可见的位置开始
+        container.style.transform = "translateX(0)";
+    });
+</script>

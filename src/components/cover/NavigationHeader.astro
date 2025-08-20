@@ -1,0 +1,82 @@
+---
+// src/components/NavigationHeader.astro
+
+const navs = [
+    { name: "首页", href: "#" },
+    { name: "家居家电", href: "#" },
+    { name: "手机数码", href: "#" },
+    { name: "IT互联网", href: "#" },
+    { name: "电商零售", href: "#" },
+    { name: "汽车出行", href: "#" },
+    { name: "游戏娱乐", href: "#" },
+    { name: "半导体", href: "#" },
+    { name: "新基建", href: "#" },
+    { name: "酷品评测", href: "#" },
+];
+---
+
+<nav class="bg-indigo-600 text-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Desktop -->
+        <div class="hidden md:flex items-center space-x-6 h-11">
+            {
+                navs.map((n) => (
+                    <a
+                        href={n.href}
+                        class="px-2 py-2 text-sm font-medium hover:bg-indigo-800 rounded"
+                    >
+                        {n.name}
+                    </a>
+                ))
+            }
+        </div>
+
+        <!-- Mobile -->
+        <div class="md:hidden flex items-center justify-between h-11">
+            <span class="text-sm font-bold">导航</span>
+            <button
+                id="mobile-menu-button"
+                class="p-1 rounded hover:bg-indigo-700"
+                aria-label="菜单"
+            >
+                <svg
+                    class="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    viewBox="0 0 24 24"
+                >
+                    <path
+                        d="M4 6h16M4 12h16M4 18h16"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"></path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Mobile Panel -->
+        <div id="mobile-menu" class="hidden md:hidden pb-3 space-y-1">
+            {
+                navs.map((n) => (
+                    <a
+                        href={n.href}
+                        class="block px-3 py-2 text-sm font-medium hover:bg-indigo-700 rounded"
+                    >
+                        {n.name}
+                    </a>
+                ))
+            }
+        </div>
+    </div>
+
+    <script>
+        const btn = document.getElementById("mobile-menu-button");
+        const panel = document.getElementById("mobile-menu");
+
+        if (btn && panel) {
+            btn.addEventListener("click", () => {
+                panel.classList.toggle("hidden");
+            });
+        }
+    </script>
+</nav>

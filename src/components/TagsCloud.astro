@@ -1,0 +1,127 @@
+---
+// src/components/TagsCloud.astro
+
+// 组件属性
+export interface Props {
+    maxlength?: number;
+}
+
+const { maxlength = 20 } = Astro.props;
+
+const allPosts = Object.values(
+    import.meta.glob("../pages/post/*.md", { eager: true }),
+);
+
+// 提取所有标签并去重
+const allTags = allPosts.map((post) => post.frontmatter.tags || []).flat();
+const uniqueTags = [...new Set(allTags)];
+
+// 计算每个标签的出现频率
+const tagFrequency = {};
+allTags.forEach((tag) => {
+    tagFrequency[tag] = (tagFrequency[tag] || 0) + 1;
+});
+
+// 按频率从高到低排序标签，并限制显示数量
+const sortedTags = uniqueTags
+    .sort((a, b) => {
+        return tagFrequency[b] - tagFrequency[a];
+    })
+    .slice(0, maxlength);
+---
+
+<div
+    class="tags-cloud-container bg-white rounded-xl shadow-lg p-6 border border-gray-100"
+>
+    <!-- 标题区域 -->
+    <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-bold text-gray-800 flex items-center">
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5 mr-2 text-indigo-500"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+            >
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 173 12V7a4 4 0 014-4z"
+                ></path>
+            </svg>
+            热门标签
+        </h2>
+        <span class="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+            {sortedTags.length}{
+                uniqueTags.length > maxlength ? `/${uniqueTags.length}` : ""
+            } 个标签
+        </span>
+    </div>
+
+    <!-- 标签云 -->
+    <div class="tags-cloud flex flex-wrap gap-3">
+        {
+            sortedTags.length > 0 ? (
+                sortedTags.map((tag) => {
+                    const frequency = tagFrequency[tag] || 1;
+
+                    return (
+                        <a
+                            href={`/tags/${encodeURIComponent(tag)}`}
+                            class="inline-flex items-center px-3 py-1.5 rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200 hover:text-blue-900 transition-all duration-300 shadow-sm hover:shadow-md text-sm"
+                            title={`${tag} (${frequency}篇文章)`}
+                        >
+                            {tag}
+                        </a>
+                    );
+                })
+            ) : (
+                <div class="text-center w-full py-8 text-gray-500">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-12 w-12 mx-auto text-gray-300 mb-3"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 173 12V7a4 4 0 014-4z"
+                        />
+                    </svg>
+                    <p>暂无标签</p>
+                </div>
+            )
+        }
+    </div>
+
+    <!-- 底部说明 -->
+    <div class="mt-6 pt-4 border-t border-gray-100">
+        <p class="text-sm text-gray-500 text-center">
+            {
+                uniqueTags.length > maxlength
+                    ? `显示前 ${maxlength} 个最热门标签，点击标签查看相关文章`
+                    : "标签按热门程度排序，点击标签查看相关文章"
+            }
+        </p>
+    </div>
+</div>
+
+<style>
+    .tags-cloud-container {
+        font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+    }
+
+    .tags-cloud a {
+        transition:
+            transform 0.2s ease,
+            box-shadow 0.2s ease;
+    }
+
+    .tags-cloud a:hover {
+        transform: translateY(-2px);
+    }
+</style>

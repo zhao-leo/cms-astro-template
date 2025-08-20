@@ -1,0 +1,191 @@
+---
+// src/components/FeaturedCarousel.astro
+
+const allPosts = Object.values(import.meta.glob('../pages/post/*.md', { eager: true }));
+
+// 筛选origin=true且有image字段的文章
+const featuredPosts = allPosts
+  .filter(post => post.frontmatter.origin === true && post.frontmatter.image)
+  .sort((a, b) => new Date(b.frontmatter.date) - new Date(a.frontmatter.date))
+  .slice(0, 6);
+---
+
+<div class="featured-carousel-container relative bg-gray-900 rounded-xl overflow-hidden shadow-xl">
+
+  <!-- <div class="absolute top-0 left-0 right-0 z-10 p-6 bg-gradient-to-b from-black/70 to-transparent">
+    <h2 class="text-2xl font-bold text-white flex items-center">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+      </svg>
+      精选原创文章
+    </h2>
+    <p class="text-gray-300 mt-1">探索我们精心挑选的原创内容</p>
+  </div> -->
+
+  <!-- 轮播图容器 -->
+  <div class="swiper featuredSwiper h-96 md:h-[500px]">
+    <div class="swiper-wrapper">
+      {featuredPosts.length > 0 ? (
+        featuredPosts.map((post, index) => (
+          <div class="swiper-slide relative group">
+            <!-- 图片 -->
+            <div class="absolute inset-0 overflow-hidden">
+              <img
+                src={post.frontmatter.image}
+                alt={post.frontmatter.title}
+                class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+              />
+              <!-- 渐变遮罩 -->
+              <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+            </div>
+
+            <!-- 内容 -->
+            <div class="absolute bottom-0 left-0 right-0 p-6 text-white z-10">
+              <div class="mb-2">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-500 text-gray-900">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                  原创
+                </span>
+              </div>
+              <h3 class="text-xl md:text-2xl font-bold mb-2 line-clamp-2 group-hover:text-yellow-300 transition-colors">
+                <a href={post.url}>{post.frontmatter.title}</a>
+              </h3>
+              <p class="text-gray-300 line-clamp-2 text-sm md:text-base">
+                {post.frontmatter.description || "探索这篇原创文章的精彩内容..."}
+              </p>
+              <div class="mt-4 flex items-center text-sm text-gray-300">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                {new Date(post.frontmatter.date).toLocaleDateString('zh-CN')}
+              </div>
+            </div>
+
+            <!-- 阅读更多按钮 -->
+            <a href={post.url} class="absolute inset-0 z-20" aria-label={`阅读文章: ${post.frontmatter.title}`}></a>
+          </div>
+        ))
+      ) : (
+        <div class="swiper-slide bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
+          <div class="text-center text-white p-8">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-500 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <h3 class="text-xl font-medium mb-2">暂无精选文章</h3>
+            <p class="text-gray-400">当前没有原创图片文章可供展示</p>
+          </div>
+        </div>
+      )}
+    </div>
+
+    <!-- 分页器 -->
+    <div class="swiper-pagination !bottom-6"></div>
+
+    <!-- 导航按钮 -->
+    <div class="swiper-button-next !text-white !right-4 after:!text-xl md:after:!text-2xl"></div>
+    <div class="swiper-button-prev !text-white !left-4 after:!text-xl md:after:!text-2xl"></div>
+  </div>
+</div>
+
+<!-- 引入Swiper CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css" />
+
+<style>
+  .featured-carousel-container {
+    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  }
+
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* 自定义Swiper样式 */
+  .swiper-pagination-bullet {
+    background: rgba(255, 255, 255, 0.6);
+    opacity: 1;
+    width: 10px;
+    height: 10px;
+  }
+
+  .swiper-pagination-bullet-active {
+    background: #f59e0b;
+    width: 30px;
+    border-radius: 5px;
+  }
+
+  .swiper-button-next, .swiper-button-prev {
+    background: rgba(0, 0, 0, 0.3);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    transition: all 0.3s ease;
+  }
+
+  .swiper-button-next:hover, .swiper-button-prev:hover {
+    background: rgba(0, 0, 0, 0.6);
+  }
+
+  .swiper-button-next:after, .swiper-button-prev:after {
+    font-weight: bold;
+  }
+
+  @media (max-width: 768px) {
+    .swiper-button-next, .swiper-button-prev {
+      display: none;
+    }
+  }
+</style>
+<!-- 初始化Swiper -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // 通过检查DOM中是否有实际的幻灯片来判断是否初始化Swiper
+    const swiperWrapper = document.querySelector('.featuredSwiper .swiper-wrapper');
+    const hasSlides = swiperWrapper && swiperWrapper.children.length > 0;
+
+    if (hasSlides) {
+      // 动态加载Swiper
+      Promise.all([
+        import('https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js')
+      ]).then(([SwiperModule]) => {
+        const Swiper = SwiperModule.default;
+
+        new Swiper('.featuredSwiper', {
+          loop: true,
+          speed: 800,
+          autoplay: {
+            delay: 5000,
+            disableOnInteraction: false,
+          },
+          pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+            dynamicBullets: true,
+          },
+          navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+          },
+          effect: 'fade',
+          fadeEffect: {
+            crossFade: true
+          },
+          on: {
+            init: function() {
+              // 添加加载完成类，用于可能的动画
+              document.querySelector('.featuredSwiper').classList.add('swiper-loaded');
+            },
+          },
+        });
+      }).catch(error => {
+        console.error('Error loading Swiper:', error);
+      });
+    }
+  });
+</script>

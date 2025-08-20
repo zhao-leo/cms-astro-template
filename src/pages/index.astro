@@ -1,16 +1,403 @@
 ---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ScrollingHLWPosts from "../components/ScrollingHLWPosts.astro";
+import Category from "../components/Category.astro";
+import Sideslot from "../components/Sideslot.astro";
+import TagsCloud from "../components/TagsCloud.astro";
+import FeaturedCarousel from "../components/FeaturedCarousel.astro";
 
+const pageTitle = "丁科技网";
+
+// 定义所有品类
+const categories = [
+    { name: "家居家电", href: "hlw", icon: "🏠", color: "blue" },
+    { name: "手机数码", href: "rw", icon: "📱", color: "purple" },
+    { name: "IT互联网", href: "sj", icon: "💻", color: "green" },
+    { name: "电商零售", href: "gs", icon: "🛒", color: "orange" },
+    { name: "汽车出行", href: "js", icon: "🚗", color: "red" },
+    { name: "游戏娱乐", href: "hy", icon: "🎮", color: "indigo" },
+    { name: "半导体", href: "bdt", icon: "🔬", color: "cyan" },
+    { name: "新基建", href: "xjj", icon: "🏗️", color: "teal" },
+    { name: "酷品评测", href: "cppc", icon: "⭐", color: "pink" },
+];
+
+// 首页重点展示的品类
+const featuredCategories = ["hlw", "rw", "sj"];
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<BaseLayout pageTitle={pageTitle}>
+    <!-- 顶部滚动新闻 -->
+    <div class="w-full mb-6">
+        <ScrollingHLWPosts />
+    </div>
+
+    <!-- 品类导航栏 -->
+    <div class="container mx-auto px-4 lg:px-6 mb-8">
+        <div
+            class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden"
+        >
+            <div
+                class="px-6 py-4 bg-gradient-to-r from-gray-50 to-blue-50 border-b border-gray-200"
+            >
+                <h2 class="text-lg font-bold text-gray-800 flex items-center">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-5 w-5 mr-2 text-blue-600"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                        ></path>
+                    </svg>
+                    科技分类导航
+                </h2>
+            </div>
+            <div class="p-4">
+                <div
+                    class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-9 gap-3"
+                >
+                    {
+                        categories.map((category) => (
+                            <a
+                                href={`/categories/${category.href}`}
+                                class={`category-nav-item bg-${category.color}-50 hover:bg-${category.color}-100 border border-${category.color}-200 rounded-xl p-3 text-center transition-all duration-300 hover:scale-105 hover:shadow-md group`}
+                            >
+                                <div class="text-2xl mb-1">{category.icon}</div>
+                                <div
+                                    class={`text-sm font-medium text-${category.color}-700 group-hover:text-${category.color}-800`}
+                                >
+                                    {category.name}
+                                </div>
+                            </a>
+                        ))
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主内容区域 - 三列布局 -->
+    <div class="container mx-auto px-4 lg:px-6">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- 左侧栏 - 3列宽度 (仅桌面端显示) -->
+            <aside class="hidden lg:block lg:col-span-3">
+                <div class="sticky top-6 space-y-6">
+                    <!-- 原创精选 (仅桌面端显示) -->
+                    <Sideslot type="origin" length={6} />
+
+                    <!-- 精简标签云 (仅桌面端显示) -->
+                    <TagsCloud maxlength={8} />
+                </div>
+            </aside>
+
+            <!-- 主内容区 - 手机端全宽，桌面端6列宽度 -->
+            <main class="lg:col-span-6 space-y-8">
+                <!-- 特色轮播图 -->
+                <section class="featured-section">
+                    <FeaturedCarousel />
+                </section>
+
+                <!-- 重点品类展示区 -->
+                <section class="categories-showcase space-y-6">
+                    {
+                        featuredCategories.map((categoryHref) => {
+                            const category = categories.find(
+                                (c) => c.href === categoryHref,
+                            );
+                            return (
+                                <div class="category-container">
+                                    <Category
+                                        category={categoryHref}
+                                        categoryName={category.name}
+                                    />
+                                </div>
+                            );
+                        })
+                    }
+                </section>
+            </main>
+
+            <!-- 右侧栏 - 3列宽度 (仅桌面端显示) -->
+            <aside class="hidden lg:block lg:col-span-3">
+                <div class="sticky top-6 space-y-6">
+                    <!-- 最新文章 (仅桌面端显示) -->
+                    <Sideslot type="newest" length={8} />
+
+                    <!-- 随机推荐 (仅桌面端显示) -->
+                    <Sideslot type="random" length={6} />
+                </div>
+            </aside>
+        </div>
+
+        <!-- 底部区域 (仅桌面端显示) -->
+        <div class="mt-12 space-y-8 hidden lg:block">
+            <!-- 其他品类快速预览 -->
+            <section>
+                <div
+                    class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden"
+                >
+                    <div
+                        class="px-6 py-4 bg-gradient-to-r from-indigo-50 to-purple-50 border-b border-gray-200"
+                    >
+                        <h2 class="text-lg font-bold text-gray-800">
+                            更多精彩分类
+                        </h2>
+                        <p class="text-sm text-gray-600 mt-1">
+                            探索更多科技领域的最新资讯
+                        </p>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                            {
+                                categories.slice(3).map((category) => (
+                                    <a
+                                        href={`/categories/${category.href}`}
+                                        class="bg-gray-50 hover:bg-gray-100 rounded-lg p-4 border border-gray-200 transition-all duration-300 hover:shadow-md group"
+                                    >
+                                        <div class="flex items-center">
+                                            <span class="text-2xl mr-3">
+                                                {category.icon}
+                                            </span>
+                                            <div>
+                                                <h3 class="font-medium text-gray-800 group-hover:text-indigo-600">
+                                                    {category.name}
+                                                </h3>
+                                                <p class="text-xs text-gray-500 mt-1">
+                                                    查看相关文章
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </a>
+                                ))
+                            }
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 完整标签云 -->
+            <section>
+                <div
+                    class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-8"
+                >
+                    <TagsCloud />
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- 手机端底部简洁提示 -->
+    <div class="lg:hidden mt-12 mb-8">
+        <div class="container mx-auto px-4">
+            <div
+                class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 text-center"
+            >
+                <div class="text-2xl mb-3">📱</div>
+                <h3 class="font-semibold text-gray-800 mb-2">精简模式</h3>
+                <p class="text-sm text-gray-600">
+                    手机端为您精选最重要的内容，获取完整体验请使用桌面端浏览
+                </p>
+                <div class="mt-4">
+                    <a
+                        href="/all-categories"
+                        class="inline-flex items-center text-sm text-blue-600 font-medium hover:text-blue-700"
+                    >
+                        查看所有分类
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="h-4 w-4 ml-1"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</BaseLayout>
+
+<style>
+    /* 基础布局样式 */
+    .container {
+        max-width: 1400px;
+    }
+
+    .sticky {
+        position: sticky;
+    }
+
+    /* 品类导航样式 */
+    .category-nav-item {
+        transform: perspective(1000px) rotateX(0deg);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .category-nav-item:hover {
+        transform: perspective(1000px) rotateX(-5deg) translateY(-2px);
+    }
+
+    /* 手机端优化 */
+    @media (max-width: 1023px) {
+        /* 主内容区在手机端占满全宽 */
+        main {
+            width: 100%;
+        }
+
+        /* 品类导航在手机端使用更大的间距 */
+        .category-nav-item {
+            padding: 1rem 0.5rem;
+        }
+
+        /* 分类容器在手机端使用更大的圆角 */
+        .category-container {
+            border-radius: 16px;
+        }
+
+        /* 特色轮播在手机端高度调整 */
+        .featured-section {
+            margin-bottom: 2rem;
+        }
+    }
+
+    /* 平板端优化 */
+    @media (min-width: 768px) and (max-width: 1023px) {
+        .grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+    }
+
+    /* 桌面端布局 */
+    @media (min-width: 1024px) {
+        main {
+            border-left: 1px solid #f3f4f6;
+            border-right: 1px solid #f3f4f6;
+            padding-left: 1.5rem;
+            padding-right: 1.5rem;
+        }
+    }
+
+    /* 分类容器样式 */
+    .category-container {
+        position: relative;
+        overflow: hidden;
+        border-radius: 12px;
+    }
+
+    .category-container::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, #3b82f6, transparent);
+        animation: shimmer 2s infinite;
+        z-index: 1;
+    }
+
+    @keyframes shimmer {
+        0% {
+            left: -100%;
+        }
+        100% {
+            left: 100%;
+        }
+    }
+
+    /* 交互动画 */
+    .featured-section,
+    .categories-showcase > * {
+        transition:
+            transform 0.2s ease,
+            box-shadow 0.2s ease;
+    }
+
+    .featured-section:hover,
+    .categories-showcase > *:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    /* 加载动画 */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .space-y-6 > *,
+    .space-y-8 > * {
+        animation: fadeInUp 0.8s ease forwards;
+    }
+
+    .space-y-6 > *:nth-child(1) {
+        animation-delay: 0.1s;
+    }
+    .space-y-6 > *:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+    .space-y-6 > *:nth-child(3) {
+        animation-delay: 0.3s;
+    }
+    .space-y-8 > *:nth-child(1) {
+        animation-delay: 0.2s;
+    }
+    .space-y-8 > *:nth-child(2) {
+        animation-delay: 0.4s;
+    }
+    .space-y-8 > *:nth-child(3) {
+        animation-delay: 0.6s;
+    }
+
+    /* 滚动行为优化 */
+    html {
+        scroll-behavior: smooth;
+    }
+
+    /* 颜色变量回退 */
+    .bg-blue-50 {
+        background-color: #eff6ff;
+    }
+    .bg-purple-50 {
+        background-color: #faf5ff;
+    }
+    .bg-green-50 {
+        background-color: #f0fdf4;
+    }
+    .bg-orange-50 {
+        background-color: #fff7ed;
+    }
+    .bg-red-50 {
+        background-color: #fef2f2;
+    }
+    .bg-indigo-50 {
+        background-color: #eef2ff;
+    }
+    .bg-cyan-50 {
+        background-color: #ecfeff;
+    }
+    .bg-teal-50 {
+        background-color: #f0fdfa;
+    }
+    .bg-pink-50 {
+        background-color: #fdf2f8;
+    }
+</style>
