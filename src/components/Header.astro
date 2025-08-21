@@ -4,7 +4,10 @@ const { useNavigationHeader } = Astro.props;
 import NavigationHeader from "./cover/NavigationHeader.astro";
 ---
 
-<header class="bg-white shadow-md sticky top-0 z-50">
+<header
+    id="main-header"
+    class="bg-white shadow-md sticky top-0 z-50 transition-transform duration-300 ease-in-out"
+>
     <div class="container mx-auto px-4">
         <div class="flex items-center justify-between py-4">
             <!-- Logo -->
@@ -14,7 +17,7 @@ import NavigationHeader from "./cover/NavigationHeader.astro";
                     class="text-2xl font-bold text-indigo-600 flex items-center"
                 >
                     <i class="fas fa-microchip mr-2"></i>
-                    丁科技
+                    XXX
                 </a>
             </div>
 
@@ -54,3 +57,74 @@ import NavigationHeader from "./cover/NavigationHeader.astro";
 
     {useNavigationHeader && <NavigationHeader />}
 </header>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const header = document.getElementById("main-header");
+        let lastScrollTop = 0;
+        let isScrolling = false;
+
+        // 防抖函数
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        function handleScroll() {
+            const currentScrollTop =
+                window.pageYOffset || document.documentElement.scrollTop;
+
+            // 避免在顶部时触发折叠
+            if (currentScrollTop <= 0) {
+                header.classList.remove("header-hidden");
+                return;
+            }
+
+            // 向下滚动且滚动距离超过Header高度时隐藏
+            if (
+                currentScrollTop > lastScrollTop &&
+                currentScrollTop > header.offsetHeight
+            ) {
+                header.classList.add("header-hidden");
+            }
+            // 向上滚动时显示
+            else if (currentScrollTop < lastScrollTop) {
+                header.classList.remove("header-hidden");
+            }
+
+            lastScrollTop = currentScrollTop;
+        }
+
+        // 使用防抖优化性能
+        const debouncedHandleScroll = debounce(handleScroll, 10);
+
+        window.addEventListener("scroll", debouncedHandleScroll, {
+            passive: true,
+        });
+    });
+</script>
+
+<style>
+    .header-hidden {
+        transform: translateY(-100%);
+    }
+
+    /* 确保过渡效果应用到正确的属性 */
+    #main-header {
+        transition: transform 0.3s ease-in-out;
+    }
+
+    /* 为移动端优化 */
+    @media (max-width: 768px) {
+        #main-header {
+            transition: transform 0.2s ease-in-out;
+        }
+    }
+</style>
