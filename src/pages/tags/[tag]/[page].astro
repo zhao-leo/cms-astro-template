@@ -1,0 +1,101 @@
+---
+// src/pages/tags/[tag]/[page].astro
+// 标签页面分页
+
+import ListLayout from "../../../layouts/ListLayout.astro";
+
+export async function getStaticPaths() {
+    const POSTS_PER_PAGE = 10;
+
+    const allPosts = Object.values(
+        import.meta.glob("../../post/*.md", { eager: true }),
+    );
+
+    // 提取所有标签
+    const allTags = allPosts.map((post) => post.frontmatter?.tags || []).flat();
+    const uniqueTags = [...new Set(allTags)];
+
+    // 预定义的标签列表，确保一些重要标签都有页面（可选）
+    const predefinedTags = [
+        "astro",
+        "blogging",
+        "learning in public",
+        "technology",
+        "review",
+        "guide",
+        "tutorial",
+        "news",
+    ];
+
+    // 合并预定义标签和实际存在的标签
+    const allTagsIncludingEmpty = [
+        ...new Set([...predefinedTags, ...uniqueTags]),
+    ];
+
+    const paths = [];
+
+    for (const tag of allTagsIncludingEmpty) {
+        // 筛选包含该标签的文章
+        const tagPosts = allPosts
+            .filter((post) => {
+                const tags = post.frontmatter?.tags || [];
+                return tags.includes(tag);
+            })
+            .sort(
+                (a, b) =>
+                    new Date(b.frontmatter?.date || 0).getTime() -
+                    new Date(a.frontmatter?.date || 0).getTime(),
+            );
+
+        // 计算总页数，如果没有文章则至少有1页
+        const totalPages = Math.max(
+            1,
+            Math.ceil(tagPosts.length / POSTS_PER_PAGE),
+        );
+
+        // 为每个页面生成路径
+        for (let i = 1; i <= totalPages; i++) {
+            const startIndex = (i - 1) * POSTS_PER_PAGE;
+            const endIndex = startIndex + POSTS_PER_PAGE;
+            const postsForPage = tagPosts.slice(startIndex, endIndex);
+
+            paths.push({
+                params: {
+                    tag: tag,
+                    page: i.toString(),
+                },
+                props: {
+                    posts: postsForPage,
+                    currentPage: i,
+                    totalPages: totalPages,
+                    tag: tag,
+                    totalPosts: tagPosts.length,
+                },
+            });
+        }
+    }
+
+    return paths;
+}
+
+const { posts, currentPage, totalPages, tag, totalPosts } = Astro.props;
+
+// 构建基础URL
+const baseUrl = `/tags/${encodeURIComponent(tag)}`;
+
+// 页面标题和副标题
+const pageTitle = `标签：${tag}`;
+const pageSubtitle = `共找到 ${totalPosts} 篇相关文章`;
+---
+
+<ListLayout
+    posts={posts}
+    currentPage={currentPage}
+    totalPages={totalPages}
+    baseUrl={baseUrl}
+    pageTitle={pageTitle}
+    pageSubtitle={pageSubtitle}
+    filterType="tag"
+    filterValue={tag}
+    totalPosts={totalPosts}
+/>

@@ -1,0 +1,117 @@
+---
+// src/pages/categories/[category]/[page].astro
+// 分类页面分页
+
+import ListLayout from "../../../layouts/ListLayout.astro";
+
+export async function getStaticPaths() {
+    const POSTS_PER_PAGE = 10;
+
+    const allPosts = Object.values(
+        import.meta.glob("../../post/*.md", { eager: true }),
+    );
+
+    // 提取所有分类
+    const allCategories = allPosts
+        .map((post) => post.frontmatter?.categories || [])
+        .flat();
+    const uniqueCategories = [...new Set(allCategories)];
+
+    // 预定义的分类列表，确保所有分类都有页面
+    const predefinedCategories = [
+        "hlw",
+        "rw",
+        "sj",
+        "gs",
+        "js",
+        "hy",
+        "bdt",
+        "xjj",
+        "cppc",
+    ];
+
+    // 合并预定义分类和实际存在的分类
+    const allCategoriesIncludingEmpty = [
+        ...new Set([...predefinedCategories, ...uniqueCategories]),
+    ];
+
+    const paths = [];
+
+    for (const category of allCategoriesIncludingEmpty) {
+        // 筛选包含该分类的文章
+        const categoryPosts = allPosts
+            .filter((post) => {
+                const categories = post.frontmatter?.categories || [];
+                return categories.includes(category);
+            })
+            .sort(
+                (a, b) =>
+                    new Date(b.frontmatter?.date || 0).getTime() -
+                    new Date(a.frontmatter?.date || 0).getTime(),
+            );
+
+        // 计算总页数，如果没有文章则至少有1页
+        const totalPages = Math.max(
+            1,
+            Math.ceil(categoryPosts.length / POSTS_PER_PAGE),
+        );
+
+        // 为每个页面生成路径
+        for (let i = 1; i <= totalPages; i++) {
+            const startIndex = (i - 1) * POSTS_PER_PAGE;
+            const endIndex = startIndex + POSTS_PER_PAGE;
+            const postsForPage = categoryPosts.slice(startIndex, endIndex);
+
+            paths.push({
+                params: {
+                    category: category,
+                    page: i.toString(),
+                },
+                props: {
+                    posts: postsForPage,
+                    currentPage: i,
+                    totalPages: totalPages,
+                    category: category,
+                    totalPosts: categoryPosts.length,
+                },
+            });
+        }
+    }
+
+    return paths;
+}
+
+const { posts, currentPage, totalPages, category, totalPosts } = Astro.props;
+
+// 构建基础URL
+const baseUrl = `/categories/${encodeURIComponent(category)}`;
+
+// 分类名称映射（可以根据需要添加更多）
+const categoryNameMap: Record<string, string> = {
+    hlw: "家居家电",
+    rw: "手机数码",
+    sj: "IT互联网",
+    gs: "电商零售",
+    js: "汽车出行",
+    hy: "游戏娱乐",
+    bdt: "半导体",
+    xjj: "新基建",
+    cppc: "酷品评测",
+};
+
+const displayName = categoryNameMap[category] || category;
+const finalPageTitle = `分类：${displayName}`;
+const pageSubtitle = `共找到 ${totalPosts} 篇相关文章`;
+---
+
+<ListLayout
+    posts={posts}
+    currentPage={currentPage}
+    totalPages={totalPages}
+    baseUrl={baseUrl}
+    pageTitle={finalPageTitle}
+    pageSubtitle={pageSubtitle}
+    filterType="category"
+    filterValue={displayName}
+    totalPosts={totalPosts}
+/>

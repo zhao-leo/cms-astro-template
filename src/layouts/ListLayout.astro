@@ -1,0 +1,293 @@
+---
+import BaseLayout from "./BaseLayout.astro";
+import PostList from "../components/PostList.astro";
+import Paginator from "../components/Paginator.astro";
+import Sideslot from "../components/Sideslot.astro";
+import TagsCloud from "../components/TagsCloud.astro";
+
+export interface Props {
+    posts: any[];
+    currentPage: number;
+    totalPages: number;
+    baseUrl: string;
+    pageTitle: string;
+    pageSubtitle?: string;
+    filterType?: "tag" | "category";
+    filterValue?: string;
+    totalPosts?: number;
+}
+
+const {
+    posts,
+    currentPage,
+    totalPages,
+    baseUrl,
+    pageTitle,
+    pageSubtitle,
+    filterType,
+    filterValue,
+    totalPosts,
+} = Astro.props;
+
+// 根据过滤类型决定是否显示分类或标签
+const showCategory = filterType !== "category";
+const showTags = filterType !== "tag";
+---
+
+<BaseLayout pageTitle={pageTitle} useNav={true}>
+    <div class="container mx-auto px-4 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <!-- 主内容区 - 占据大部分空间 -->
+            <div class="lg:col-span-3">
+                <!-- 页面标题区域 -->
+                <div
+                    class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8"
+                >
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h1 class="text-3xl font-bold text-gray-900 mb-2">
+                                {pageTitle}
+                            </h1>
+                            {
+                                pageSubtitle && (
+                                    <p class="text-gray-600">{pageSubtitle}</p>
+                                )
+                            }
+                        </div>
+
+                        <!-- 过滤信息 -->
+                        {
+                            filterType && filterValue && (
+                                <div class="text-right">
+                                    <div class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">
+                                        {filterType === "tag" && (
+                                            <svg
+                                                class="w-4 h-4 mr-1"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                    stroke-width="2"
+                                                    d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 173 12V7a4 4 0 014-4z"
+                                                />
+                                            </svg>
+                                        )}
+                                        {filterType === "category" && (
+                                            <svg
+                                                class="w-4 h-4 mr-1"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                    stroke-width="2"
+                                                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                                                />
+                                            </svg>
+                                        )}
+                                        {filterValue}
+                                    </div>
+                                    <p class="text-sm text-gray-500 mt-1">
+                                        共找到 {totalPosts || 0} 篇文章
+                                    </p>
+                                </div>
+                            )
+                        }
+                    </div>
+                </div>
+
+                <!-- 文章列表 -->
+                <PostList
+                    posts={posts}
+                    showCategory={showCategory}
+                    showTags={showTags}
+                />
+
+                <!-- 分页导航 -->
+                {
+                    totalPages > 1 && (
+                        <div class="mt-12 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                            <Paginator
+                                currentPage={currentPage}
+                                totalPages={totalPages}
+                                baseUrl={baseUrl}
+                            />
+                        </div>
+                    )
+                }
+            </div>
+
+            <!-- 侧边栏 - 只在桌面端显示 -->
+            <div class="hidden lg:block lg:col-span-1">
+                <div class="sticky top-24 space-y-6">
+                    <!-- 最新文章 -->
+                    <Sideslot type="newest" length={8} />
+
+                    <!-- 原创精选 -->
+                    <Sideslot type="origin" length={6} />
+
+                    <!-- 标签云 -->
+                    <TagsCloud maxlength={12} />
+
+                    <!-- 随机推荐 -->
+                    <Sideslot type="random" length={6} />
+                </div>
+            </div>
+        </div>
+
+        <!-- 面包屑导航 -->
+        <div class="mt-8">
+            <nav class="flex" aria-label="面包屑">
+                <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                    <li class="inline-flex items-center">
+                        <a
+                            href="/"
+                            class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-indigo-600"
+                        >
+                            <svg
+                                class="w-4 h-4 mr-2"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                            >
+                                <path
+                                    d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"
+                                ></path>
+                            </svg>
+                            首页
+                        </a>
+                    </li>
+                    {
+                        filterType === "tag" && (
+                            <>
+                                <li>
+                                    <div class="flex items-center">
+                                        <svg
+                                            class="w-6 h-6 text-gray-400"
+                                            fill="currentColor"
+                                            viewBox="0 0 20 20"
+                                        >
+                                            <path
+                                                fill-rule="evenodd"
+                                                d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                                                clip-rule="evenodd"
+                                            />
+                                        </svg>
+                                        <a
+                                            href="/tags"
+                                            class="ml-1 text-sm font-medium text-gray-700 hover:text-indigo-600 md:ml-2"
+                                        >
+                                            标签
+                                        </a>
+                                    </div>
+                                </li>
+                                <li aria-current="page">
+                                    <div class="flex items-center">
+                                        <svg
+                                            class="w-6 h-6 text-gray-400"
+                                            fill="currentColor"
+                                            viewBox="0 0 20 20"
+                                        >
+                                            <path
+                                                fill-rule="evenodd"
+                                                d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                                                clip-rule="evenodd"
+                                            />
+                                        </svg>
+                                        <span class="ml-1 text-sm font-medium text-gray-500 md:ml-2">
+                                            {filterValue}
+                                        </span>
+                                    </div>
+                                </li>
+                            </>
+                        )
+                    }
+                    {
+                        filterType === "category" && (
+                            <>
+                                <li>
+                                    <div class="flex items-center">
+                                        <svg
+                                            class="w-6 h-6 text-gray-400"
+                                            fill="currentColor"
+                                            viewBox="0 0 20 20"
+                                        >
+                                            <path
+                                                fill-rule="evenodd"
+                                                d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                                                clip-rule="evenodd"
+                                            />
+                                        </svg>
+                                        <a
+                                            href="/categories"
+                                            class="ml-1 text-sm font-medium text-gray-700 hover:text-indigo-600 md:ml-2"
+                                        >
+                                            分类
+                                        </a>
+                                    </div>
+                                </li>
+                                <li aria-current="page">
+                                    <div class="flex items-center">
+                                        <svg
+                                            class="w-6 h-6 text-gray-400"
+                                            fill="currentColor"
+                                            viewBox="0 0 20 20"
+                                        >
+                                            <path
+                                                fill-rule="evenodd"
+                                                d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                                                clip-rule="evenodd"
+                                            />
+                                        </svg>
+                                        <span class="ml-1 text-sm font-medium text-gray-500 md:ml-2">
+                                            {filterValue}
+                                        </span>
+                                    </div>
+                                </li>
+                            </>
+                        )
+                    }
+                </ol>
+            </nav>
+        </div>
+    </div>
+</BaseLayout>
+
+<style>
+    .container {
+        font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+        max-width: 1400px;
+    }
+
+    /* 移动端优化 */
+    @media (max-width: 1023px) {
+        .lg\:col-span-3 {
+            grid-column: span 1;
+        }
+
+        .sticky {
+            position: relative;
+            top: auto;
+        }
+    }
+
+    /* 平板端优化 */
+    @media (min-width: 768px) and (max-width: 1023px) {
+        .container {
+            padding-left: 1.5rem;
+            padding-right: 1.5rem;
+        }
+    }
+
+    /* 桌面端布局优化 */
+    @media (min-width: 1024px) {
+        .lg\:col-span-3 {
+            border-right: 1px solid #f3f4f6;
+            padding-right: 2rem;
+        }
+    }
+</style>

@@ -1,0 +1,349 @@
+---
+// src/pages/categories/index.astro
+// 分类总览页面
+
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const allPosts = Object.values(
+    import.meta.glob("../post/*.md", { eager: true }),
+);
+
+// 提取所有分类并统计
+const allCategories = allPosts
+    .map((post) => post.frontmatter.categories || [])
+    .flat();
+const categoryFrequency = {};
+allCategories.forEach((category) => {
+    categoryFrequency[category] = (categoryFrequency[category] || 0) + 1;
+});
+
+// 按频率排序分类
+const sortedCategories = [...new Set(allCategories)].sort((a, b) => {
+    return categoryFrequency[b] - categoryFrequency[a];
+});
+
+// 分类名称和描述映射
+const categoryInfo = {
+    hlw: {
+        name: "家居家电",
+        description: "智能家居、家用电器、生活用品等相关资讯",
+        icon: "🏠",
+        color: "blue"
+    },
+    rw: {
+        name: "手机数码",
+        description: "手机、平板、数码产品评测和新闻",
+        icon: "📱",
+        color: "purple"
+    },
+    sj: {
+        name: "IT互联网",
+        description: "互联网行业动态、技术发展趋势",
+        icon: "💻",
+        color: "green"
+    },
+    gs: {
+        name: "电商零售",
+        description: "电商平台、零售行业、购物指南",
+        icon: "🛒",
+        color: "orange"
+    },
+    js: {
+        name: "汽车出行",
+        description: "汽车科技、出行方式、交通工具",
+        icon: "🚗",
+        color: "red"
+    },
+    hy: {
+        name: "游戏娱乐",
+        description: "游戏行业、娱乐科技、数字娱乐",
+        icon: "🎮",
+        color: "indigo"
+    },
+    bdt: {
+        name: "半导体",
+        description: "芯片行业、半导体技术、硬件发展",
+        icon: "🔬",
+        color: "cyan"
+    },
+    xjj: {
+        name: "新基建",
+        description: "5G、人工智能、大数据等新基础设施",
+        icon: "🏗️",
+        color: "teal"
+    },
+    cppc: {
+        name: "酷品评测",
+        description: "新奇产品、科技评测、产品体验",
+        icon: "⭐",
+        color: "pink"
+    }
+};
+
+const pageTitle = "文章分类 - XXXX";
+---
+
+<BaseLayout pageTitle={pageTitle} useNav={true}>
+    <div class="container mx-auto px-4 py-8">
+        <!-- 页面标题 -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-gray-900 mb-4">
+                文章分类
+            </h1>
+            <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+                按分类浏览文章，快速找到感兴趣的科技领域内容。
+            </p>
+            <div class="mt-6">
+                <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">
+                    共 {sortedCategories.length} 个分类
+                </span>
+            </div>
+        </div>
+
+        <!-- 分类网格 -->
+        <div class="max-w-6xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+                {sortedCategories.map((category) => {
+                    const info = categoryInfo[category] || {
+                        name: category,
+                        description: "相关文章和资讯",
+                        icon: "📄",
+                        color: "gray"
+                    };
+                    const frequency = categoryFrequency[category];
+                    const percentage = Math.round((frequency / allPosts.length) * 100);
+
+                    return (
+                        <a
+                            href={`/categories/${category}/1`}
+                            class={`block bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 hover:scale-105 group`}
+                        >
+                            <div class={`h-2 bg-gradient-to-r from-${info.color}-400 to-${info.color}-600`}></div>
+
+                            <div class="p-6">
+                                <!-- 图标和标题 -->
+                                <div class="flex items-center mb-4">
+                                    <div class="text-3xl mr-4">{info.icon}</div>
+                                    <div>
+                                        <h3 class="text-xl font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">
+                                            {info.name}
+                                        </h3>
+                                        <p class="text-sm text-gray-500">
+                                            {frequency} 篇文章
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <!-- 描述 -->
+                                <p class="text-gray-600 mb-4 leading-relaxed">
+                                    {info.description}
+                                </p>
+
+                                <!-- 统计信息 -->
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <div class="w-20 bg-gray-200 rounded-full h-2 mr-3">
+                                            <div
+                                                class={`bg-${info.color}-500 h-2 rounded-full transition-all duration-300`}
+                                                style={`width: ${Math.min(100, (frequency / Math.max(...Object.values(categoryFrequency))) * 100)}%`}
+                                            ></div>
+                                        </div>
+                                        <span class="text-xs text-gray-500">
+                                            {percentage}%
+                                        </span>
+                                    </div>
+
+                                    <div class="flex items-center text-sm text-indigo-600 group-hover:text-indigo-700">
+                                        浏览文章
+                                        <svg class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    );
+                })}
+            </div>
+        </div>
+
+        <!-- 详细统计 -->
+        <div class="max-w-4xl mx-auto">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-blue-50 border-b border-gray-200">
+                    <h2 class="text-xl font-bold text-gray-800 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                        分类统计详情
+                    </h2>
+                </div>
+
+                <div class="divide-y divide-gray-100">
+                    {sortedCategories.map((category, index) => {
+                        const info = categoryInfo[category] || {
+                            name: category,
+                            description: "相关文章和资讯",
+                            icon: "📄",
+                            color: "gray"
+                        };
+                        const frequency = categoryFrequency[category];
+                        const percentage = Math.round((frequency / allPosts.length) * 100);
+
+                        return (
+                            <div class="px-6 py-4 hover:bg-gray-50 transition-colors">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <span class="flex-shrink-0 w-8 h-8 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-sm font-medium mr-4">
+                                            {index + 1}
+                                        </span>
+                                        <div class="flex items-center">
+                                            <span class="text-2xl mr-3">{info.icon}</span>
+                                            <div>
+                                                <a
+                                                    href={`/categories/${category}/1`}
+                                                    class="text-lg font-semibold text-gray-900 hover:text-indigo-600 transition-colors"
+                                                >
+                                                    {info.name}
+                                                </a>
+                                                <p class="text-sm text-gray-500">
+                                                    {frequency} 篇文章 • 占总文章的 {percentage}%
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-center space-x-3">
+                                        <!-- 热度指示器 -->
+                                        <div class="flex items-center">
+                                            <div class="w-24 bg-gray-200 rounded-full h-2">
+                                                <div
+                                                    class="bg-indigo-600 h-2 rounded-full transition-all duration-300"
+                                                    style={`width: ${Math.min(100, (frequency / Math.max(...Object.values(categoryFrequency))) * 100)}%`}
+                                                ></div>
+                                            </div>
+                                            <span class="ml-2 text-xs text-gray-500 w-8 text-right">
+                                                {frequency}
+                                            </span>
+                                        </div>
+
+                                        <!-- 查看按钮 -->
+                                        <a
+                                            href={`/categories/${category}/1`}
+                                            class="inline-flex items-center px-3 py-1 rounded-md text-sm font-medium bg-indigo-100 text-indigo-700 hover:bg-indigo-200 transition-colors"
+                                        >
+                                            查看文章
+                                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                            </svg>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+        </div>
+
+        <!-- 面包屑导航 -->
+        <div class="mt-8">
+            <nav class="flex justify-center" aria-label="面包屑">
+                <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                    <li class="inline-flex items-center">
+                        <a href="/" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-indigo-600">
+                            <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path>
+                            </svg>
+                            首页
+                        </a>
+                    </li>
+                    <li aria-current="page">
+                        <div class="flex items-center">
+                            <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span class="ml-1 text-sm font-medium text-gray-500 md:ml-2">分类</span>
+                        </div>
+                    </li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+</BaseLayout>
+
+<style>
+    .container {
+        font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+        max-width: 1400px;
+    }
+
+    /* 分类卡片悬停效果 */
+    .group:hover .bg-indigo-600 {
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: .8;
+        }
+    }
+
+    /* 颜色变量回退 */
+    .bg-blue-400 { background-color: #60a5fa; }
+    .bg-blue-500 { background-color: #3b82f6; }
+    .bg-blue-600 { background-color: #2563eb; }
+    .bg-purple-400 { background-color: #a78bfa; }
+    .bg-purple-500 { background-color: #8b5cf6; }
+    .bg-purple-600 { background-color: #7c3aed; }
+    .bg-green-400 { background-color: #4ade80; }
+    .bg-green-500 { background-color: #22c55e; }
+    .bg-green-600 { background-color: #16a34a; }
+    .bg-orange-400 { background-color: #fb923c; }
+    .bg-orange-500 { background-color: #f97316; }
+    .bg-orange-600 { background-color: #ea580c; }
+    .bg-red-400 { background-color: #f87171; }
+    .bg-red-500 { background-color: #ef4444; }
+    .bg-red-600 { background-color: #dc2626; }
+    .bg-indigo-400 { background-color: #818cf8; }
+    .bg-indigo-500 { background-color: #6366f1; }
+    .bg-indigo-600 { background-color: #4f46e5; }
+    .bg-cyan-400 { background-color: #22d3ee; }
+    .bg-cyan-500 { background-color: #06b6d4; }
+    .bg-cyan-600 { background-color: #0891b2; }
+    .bg-teal-400 { background-color: #2dd4bf; }
+    .bg-teal-500 { background-color: #14b8a6; }
+    .bg-teal-600 { background-color: #0d9488; }
+    .bg-pink-400 { background-color: #f472b6; }
+    .bg-pink-500 { background-color: #ec4899; }
+    .bg-pink-600 { background-color: #db2777; }
+    .bg-gray-400 { background-color: #9ca3af; }
+    .bg-gray-500 { background-color: #6b7280; }
+    .bg-gray-600 { background-color: #4b5563; }
+
+    /* 移动端优化 */
+    @media (max-width: 768px) {
+        .container {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+
+        .grid {
+            grid-template-columns: 1fr;
+        }
+
+        .flex.items-center.justify-between {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .flex.items-center.space-x-3 {
+            width: 100%;
+            justify-content: space-between;
+        }
+    }
+</style>

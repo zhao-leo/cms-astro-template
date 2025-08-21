@@ -1,0 +1,25 @@
+---
+// src/pages/categories/[category]/index.astro
+// 分类页面重定向到第一页
+
+export async function getStaticPaths() {
+    const allPosts = Object.values(
+        import.meta.glob("../../post/*.md", { eager: true }),
+    );
+
+    // 提取所有分类
+    const allCategories = allPosts
+        .map((post) => post.frontmatter?.categories || [])
+        .flat();
+    const uniqueCategories = [...new Set(allCategories)];
+
+    return uniqueCategories.map((category) => ({
+        params: { category: category },
+    }));
+}
+
+const { category } = Astro.params;
+
+// 重定向到第一页
+return Astro.redirect(`/categories/${encodeURIComponent(category)}/1`);
+---
